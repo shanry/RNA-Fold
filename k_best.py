@@ -425,23 +425,15 @@ def algo_2(s, k=10):
                     if i<=(t-1):
                         for seq_left in opts_k[i, t-1][:k]:
                             seq_lefts.append((seq_left[0], seq_left[1]))
-                    # else:
-                    #     seq_lefts = [(0, "(")]
-                    
+
                     # structure on the left of t
                     seq_rights = []
                     if (t+1)<=(j-1):
                         for seq_right in opts_k[t+1, j-1][:k]:
                             seq_rights.append((seq_right[0], seq_right[1]))
-                    # else:
-                    #     seq_rights = [(0, ")")]
                     
                     harc = HyperArc(split=t, k=k, seq_lefts=seq_lefts, seq_rights=seq_rights)
                     harc_list.append(harc)
-                    # harc.initilize()
-                    # harc_list.append(harc)
-                    # item_best = harc.extract_best()
-                    # minhp.add((item_best[0], item_best[1], len(harc_list)))
             hyperarc_list = HyperArcList(harc_list, k)
             hyperarc_list.initilize()
             while hyperarc_list.mincand.pool:
