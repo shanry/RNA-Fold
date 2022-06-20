@@ -1,6 +1,7 @@
 import argparse
 
 from k_best import algo_0, algo_1, algo_2
+from k_best_lazy import algo_3
 
 def test(algo, k):
     rnas = [
@@ -40,6 +41,8 @@ if __name__ == "__main__":
         algo = algo_1
     if args.algo == 2:
         algo = algo_2
+    if args.algo == 3:
+        algo = algo_3
     best_1, num_struct, best_k = algo(args.rna, args.k)
     print()
     print(args.rna)
