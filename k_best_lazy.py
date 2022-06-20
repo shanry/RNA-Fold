@@ -174,7 +174,11 @@ def algo_3(s, k=10):
             if key not in harcs:
                 harcs[key] = hyperarc_list
     lazy_kth_best(0, n-1, n, k, k, bests, harcs)
-    return opts[0, -1], int(counts[0, -1]), bests[hash_grid(0, n-1, n)]
+    best_1 = opts[0, -1][0], opts[0, -1][1]
+    num_struct = int(counts[0, -1]) 
+    best_k = [(cand.score, cand.label) for cand in bests[hash_grid(0, n-1, n)]]
+    return best_1, num_struct, best_k
+    # return opts[0, -1], int(counts[0, -1]), bests[hash_grid(0, n-1, n)]
 
 
 def lazy_kth_best(start, end, n, kth, k, bests, harcs):
