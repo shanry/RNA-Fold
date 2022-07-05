@@ -112,6 +112,29 @@ def count_outside_2(s, counts=None):
     return counts_out
 
 
+def count_outside_supp(s, counts=None):  # algorithm in the supplementary of linear partition
+    assert len(s) > 1, "the length of rna should be at least 2!"
+    if counts is None:
+        counts = count_inside(s)
+    assert len(s) == len(counts) and len(s)==len(counts.T), "the length of rna should match counts matrix!"
+    n = len(s)
+    counts_out = np.zeros((n, n), dtype=int) # number of structures
+    counts_out[0, -1] = 1
+    for i in range(1, n):
+        counts_out[i, n-1] = counts[0, i-1]
+    for j in range(n-1, 0, -1):
+        for i in range(0, j):
+            counts_out[i, j-1] += counts_out[i, j]
+            if match(s[i], s[j]):
+                counts_right = counts[i+1, j-1] if i+1<=j-1 else 1
+                for t in range(0, i):
+                    counts_outleft = counts_out[t, j]
+                    counts_out[t, i-1] += counts_outleft*counts_right  # pop left
+                    if i+1<=j-1:
+                        counts_out[i+1, j] += counts_outleft*counts[t, i-1] # pop right
+    return counts_out
+
+
 def pair_match(ss):
     index_pairs = []
     stack = []
@@ -211,6 +234,29 @@ def compare_counts(rna):
     assert np.array_equal(p_out, p_out_2)
     
     print("verified!")
+    
+    
+def compare_counts_supp(rna):
+    p_in = count_inside(rna)
+    print('rna:', rna)
+    print('count inside:')
+    print(p_in)
+    
+    p_in_2 = count_inside(rna)
+    print('count inside 2:')
+    print(p_in_2)
+    assert np.array_equal(p_in, p_in_2)
+    
+    p_out = count_outside(rna, p_in)
+    print('count outside:')
+    print(p_out)
+    
+    p_out_supp = count_outside_supp(rna, p_in_2)
+    print('count outside supp:')
+    print(p_out_supp)
+    assert np.array_equal(p_out, p_out_supp)
+    
+    print("verified!")
         
 
 if __name__ == "__main__":
@@ -219,9 +265,13 @@ if __name__ == "__main__":
     parser.add_argument("--k", type=int, default=10)
     parser.add_argument("--algo", type=int, default=0)
     parser.add_argument("--test", action='store_true')
+    parser.add_argument("--supp", action='store_true')
     args = parser.parse_args()
     print('args:')
     print(args) 
+    if args.supp:
+        compare_counts_supp(args.rna)
+        exit()
     if args.test:
         test()
     else:
