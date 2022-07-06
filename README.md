@@ -19,6 +19,10 @@ complexity: $\mathcal{O}(n^3 + n^2\cdot k\log{k})$
 python fold.py --rna AGGCAUCAAACCCUGCAUGGGAGCG --k 10 --algo 3 \
 complexity: $\mathcal{O}(n^3 + n\cdot k\log{k})$
 
+### Get all secondary structures
+python fold.py --rna UUGGACUUG --k 10 --algo 4 # the output can be very long\
+complexity: $\mathcal{O}(n^3)$
+
 ## Partition function (count version)
 ### Count of inside and outside
 python partition.py --rna UUUGGCACUA --count --algo 1 # short to long recursion \
