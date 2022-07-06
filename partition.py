@@ -161,11 +161,14 @@ def counts_per_pair(ss_list):
 def verify(p_pair, p_in, p_out):
     n = len(p_pair)
     for i in range(n):
-        assert p_pair[i, i] == p_out[i, i]
-        for j in range(i+2, n):
-            if p_pair[i, j] > 0:
-                assert p_pair[i, j] == p_in[i+1, j-1]*p_out[i, j] #\alpha(i+1,j-1) * \beta(i,j) = # of derivations that contain (i,j)
-    
+        for j in range(i, n):
+            if j==i:
+                assert p_pair[i, i] == p_out[i, i] # \beta(i,i) = # of derivations that contain unpaired i
+            elif p_pair[i, j] > 0:
+                if j==i+1:
+                    assert p_pair[i, j] == p_out[i, j] # \beta(i,j) = # of derivations that contain (i,j)
+                else:
+                    assert p_pair[i, j] == p_in[i+1, j-1]*p_out[i, j] # \alpha(i+1,j-1) * \beta(i,j) = # of derivations that contain (i,j)
 
 
 def test(algo_in, algo_out):
