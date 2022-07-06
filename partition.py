@@ -44,7 +44,7 @@ def count_inside_2(s):
         for i in range(0, j):
             counts[i, j] = counts[i, j-1]
             if match(s[i], s[j]):
-                counts_right = counts[i+1, j-1] if t+1<=j-1 else 1
+                counts_right = counts[i+1, j-1] if i+1<=j-1 else 1
                 for t in range(0, i):
                     counts_left = counts[t, i-1] if t<=i-1 else 1
                     counts[t, j] += counts_left*counts_right
@@ -164,11 +164,11 @@ def verify(p_pair, p_in, p_out):
         assert p_pair[i, i] == p_out[i, i]
         for j in range(i+2, n):
             if p_pair[i, j] > 0:
-                assert p_pair[i, j] == p_in[i+1, j-1]*p_out[i, j]
+                assert p_pair[i, j] == p_in[i+1, j-1]*p_out[i, j] #\alpha(i+1,j-1) * \beta(i,j) = # of derivations that contain (i,j)
     
 
 
-def test():
+def test(algo_in, algo_out):
     rnas = [
         "ACAGU",
         "AC",
@@ -185,16 +185,15 @@ def test():
     ]
     print()
     for i, rna in enumerate(rnas):
-        compare_counts(rna)
-        test_counts_in_out(rna)
+        test_counts_in_out(algo_in, algo_out, rna)
         
 
-def test_counts_in_out(rna):
-    p_in = count_inside(rna)
+def test_counts_in_out(algo_in, algo_out, rna):
+    p_in = algo_in(rna)
     print('rna:', rna)
     print('count inside:')
     print(p_in)
-    p_out = count_outside(rna, p_in)
+    p_out = algo_out(rna, p_in)
     print('count outside:')
     print(p_out)
 
@@ -219,7 +218,7 @@ def compare_counts(rna):
     print('count inside:')
     print(p_in)
     
-    p_in_2 = count_inside(rna)
+    p_in_2 = count_inside_2(rna)
     print('count inside 2:')
     print(p_in_2)
     assert np.array_equal(p_in, p_in_2)
@@ -242,7 +241,7 @@ def compare_counts_supp(rna):
     print('count inside:')
     print(p_in)
     
-    p_in_2 = count_inside(rna)
+    p_in_2 = count_inside_2(rna)
     print('count inside 2:')
     print(p_in_2)
     assert np.array_equal(p_in, p_in_2)
@@ -257,23 +256,46 @@ def compare_counts_supp(rna):
     assert np.array_equal(p_out, p_out_supp)
     
     print("verified!")
+    
+
+def count(algo_in, algo_out, rna):
+    p_in = algo_in(rna)
+    print('rna:', rna)
+    print('count inside:')
+    print(p_in)
+    p_out = algo_out(rna, p_in)
+    print('count outside:')
+    print(p_out)
+    return p_in, p_out
         
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rna", type=str, default="GCACG")
     parser.add_argument("--k", type=int, default=10)
-    parser.add_argument("--algo", type=int, default=0)
+    parser.add_argument("--algo", type=int, default=1)
     parser.add_argument("--test", action='store_true')
-    parser.add_argument("--supp", action='store_true')
+    parser.add_argument("--count", action='store_true')
+    parser.add_argument("--verify", action='store_true')
+    parser.add_argument("--compare", action='store_true')
     args = parser.parse_args()
     print('args:')
-    print(args) 
-    if args.supp:
-        compare_counts_supp(args.rna)
-        exit()
-    if args.test:
-        test()
+    print(args)
+    if args.algo == 1:
+            partition_in = count_inside
+            partition_out = count_outside
+    elif args.algo == 2:
+        partition_in = count_inside_2
+        partition_out = count_outside_2
     else:
+        partition_in = count_inside_2
+        partition_out = count_outside_supp
+    if args.count:
+        count(partition_in, partition_out, args.rna)
+    if args.verify:
+        test_counts_in_out(partition_in, partition_out, args.rna)
+    if args.compare:
         compare_counts(args.rna)
-        test_counts_in_out(args.rna)
+        compare_counts_supp(args.rna)
+    if args.test:
+        test(partition_in, partition_out)
