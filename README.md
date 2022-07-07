@@ -28,7 +28,7 @@ complexity: $\mathcal{O}(n^3)$
 python partition.py --count --algo 1 --rna UUUGGCACUA # short to long recursion \
 python partition.py --count --algo 2 --rna UUUGGCACUA # left to right recursion
 
-### Count of inside and outside (triple output)
+### Count per pair and unpair (triple output)
 python partition.py --inout --algo 1 --rna UUUGGCACUA # short to long recursion \
 python partition.py --inout --algo 2 --rna UUUGGCACUA # left to right recursion
 
