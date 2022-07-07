@@ -281,7 +281,7 @@ def inside_outside(algo_in, algo_out, rna):
         for j in range(i+1, n):
             if counts_pp[i, j] > 0:
                 print(f"{i+1} {j+1} {counts_pp[i, j]}")
-    print('count per unpaired')
+    print('count per unpaired:')
     for i in range(n):
         print(f"{i+1} {counts_pp[i, i]}")
     # p_in = algo_in(rna)
