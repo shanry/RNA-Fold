@@ -131,7 +131,7 @@ def count_outside_supp(s, counts=None):  # algorithm in the supplementary of lin
                     counts_outleft = counts_out[t, j]
                     counts_out[t, i-1] += counts_outleft*counts_right  # pop left
                     if i+1<=j-1:
-                        counts_out[i+1, j] += counts_outleft*counts[t, i-1] # pop right
+                        counts_out[i+1, j-1] += counts_outleft*counts[t, i-1] # pop right
     return counts_out
 
 
