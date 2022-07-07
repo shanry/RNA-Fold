@@ -24,10 +24,15 @@ python fold.py --rna UUGGACUUG --algo 4 # the output can be very long\
 complexity: $\mathcal{O}(n^3)$
 
 ## Partition function (count version)
-### Count of inside and outside
-python partition.py --rna UUUGGCACUA --count --algo 1 # short to long recursion \
-python partition.py --rna UUUGGCACUA --count --algo 2 # left to right recursion
+### Count of inside and outside (table output)
+python partition.py --count --algo 1 --rna UUUGGCACUA # short to long recursion \
+python partition.py --count --algo 2 --rna UUUGGCACUA # left to right recursion
+
+### Count of inside and outside (triple output)
+python partition.py --inout --algo 1 --rna UUUGGCACUA # short to long recursion \
+python partition.py --inout --algo 2 --rna UUUGGCACUA # left to right recursion
 
 ### Verify count of inside and outside
-python partition.py --rna UUUGGCACUA --verify --algo 1 # short to long recursion \
-python partition.py --rna UUUGGCACUA --verify --algo 2 # left to right recursion
+python partition.py --verify --algo 1 --rna UUUGGCACUA # short to long recursion \
+python partition.py --verify --algo 2 --rna UUUGGCACUA # left to right recursion
+

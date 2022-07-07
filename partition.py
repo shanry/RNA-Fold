@@ -270,15 +270,33 @@ def count(algo_in, algo_out, rna):
     print('count outside:')
     print(p_out)
     return p_in, p_out
+
+
+def inside_outside(algo_in, algo_out, rna):
+    n = len(rna)
+    p_in = algo_in(rna)
+    print('rna:', rna)
+    print('count inside:')
+    for i in range(n):
+        for j in range(i, n):
+            print(f"{i+1} {j+1} {p_in[i, j]}")
+    p_out = algo_out(rna, p_in)
+    print('count outside:')
+    for i in range(n):
+        for j in range(i, n):
+            if p_out[i, j] > 0:
+                print(f"{i+1} {j+1} {p_out[i, j]}")
+    return p_in, p_out
         
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rna", type=str, default="GCACG")
-    parser.add_argument("--k", type=int, default=10)
+    # parser.add_argument("--k", type=int, default=10)
     parser.add_argument("--algo", type=int, default=1)
     parser.add_argument("--test", action='store_true')
     parser.add_argument("--count", action='store_true')
+    parser.add_argument("--inout", action='store_true')
     parser.add_argument("--verify", action='store_true')
     parser.add_argument("--compare", action='store_true')
     args = parser.parse_args()
@@ -295,6 +313,8 @@ if __name__ == "__main__":
         partition_out = count_outside_supp
     if args.count:
         count(partition_in, partition_out, args.rna)
+    if args.inout:
+        inside_outside(partition_in, partition_out, args.rna)
     if args.verify:
         test_counts_in_out(partition_in, partition_out, args.rna)
     if args.compare:
