@@ -273,20 +273,30 @@ def count(algo_in, algo_out, rna):
 
 
 def inside_outside(algo_in, algo_out, rna):
+    best_1, num_struct, best_all = algo_all(rna, None)
+    counts_pp = counts_per_pair([item[-1] for item in best_all])
+    print('count per pair:')
     n = len(rna)
-    p_in = algo_in(rna)
-    print('rna:', rna)
-    print('count inside:')
     for i in range(n):
-        for j in range(i, n):
-            print(f"{i+1} {j+1} {p_in[i, j]}")
-    p_out = algo_out(rna, p_in)
-    print('count outside:')
+        for j in range(i+1, n):
+            if counts_pp[i, j] > 0:
+                print(f"{i+1} {j+1} {counts_pp[i, j]}")
+    print('count per unpaired')
     for i in range(n):
-        for j in range(i, n):
-            if p_out[i, j] > 0:
-                print(f"{i+1} {j+1} {p_out[i, j]}")
-    return p_in, p_out
+        print(f"{i+1} {counts_pp[i, i]}")
+    # p_in = algo_in(rna)
+    # print('rna:', rna)
+    # print('count inside:')
+    # for i in range(n):
+    #     for j in range(i, n):
+    #         print(f"{i+1} {j+1} {p_in[i, j]}")
+    # p_out = algo_out(rna, p_in)
+    # print('count outside:')
+    # for i in range(n):
+    #     for j in range(i, n):
+    #         if p_out[i, j] > 0:
+    #             print(f"{i+1} {j+1} {p_out[i, j]}")
+    # return p_in, p_out
         
 
 if __name__ == "__main__":
