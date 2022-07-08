@@ -273,17 +273,33 @@ def count(algo_in, algo_out, rna):
 
 
 def inside_outside(algo_in, algo_out, rna):
-    best_1, num_struct, best_all = algo_all(rna, None)
-    counts_pp = counts_per_pair([item[-1] for item in best_all])
-    print('count per pair:')
     n = len(rna)
+    p_in = algo_in(rna)
+    p_out = algo_out(rna, p_in)
+    print('count per pair:')
     for i in range(n):
         for j in range(i+1, n):
-            if counts_pp[i, j] > 0:
-                print(f"{i+1} {j+1} {counts_pp[i, j]}")
+            if match(rna[i], rna[j]) > 0:
+                if j==i+1:
+                    count_pair = p_out[i, j] # \beta(i,j) = # of derivations that contain (i,j)
+                else:
+                    count_pair = p_in[i+1, j-1]*p_out[i, j] # \alpha(i+1,j-1) * \beta(i,j) = # of derivations that contain (i,j)
+                print(f"{i+1} {j+1} {count_pair}")
     print('count per unpaired:')
     for i in range(n):
-        print(f"{i+1} {counts_pp[i, i]}")
+        count_unpair = p_out[i, i]
+        print(f"{i+1} {count_unpair}")
+    # best_1, num_struct, best_all = algo_all(rna, None)
+    # counts_pp = counts_per_pair([item[-1] for item in best_all])
+    # print('count per pair:')
+    # n = len(rna)
+    # for i in range(n):
+    #     for j in range(i+1, n):
+    #         if counts_pp[i, j] > 0:
+    #             print(f"{i+1} {j+1} {counts_pp[i, j]}")
+    # print('count per unpaired:')
+    # for i in range(n):
+    #     print(f"{i+1} {counts_pp[i, i]}")
     # p_in = algo_in(rna)
     # print('rna:', rna)
     # print('count inside:')
