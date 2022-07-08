@@ -1,4 +1,5 @@
 # RNA algorithms
+Folding and partition of RNA
 ## RNA fold
 K-best parsing for the secondary structure prediction of RNA. \
 Implementation of algorithms from the paper [Better k-best Parsing](https://aclanthology.org/W05-1506.pdf).
