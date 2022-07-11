@@ -1,5 +1,5 @@
 import argparse
-
+from collections import defaultdict
 import numpy as np
 
 from k_best import algo_all
@@ -12,7 +12,7 @@ def match(x, y):
     return (x+y).lower() in pairs or (y+x).lower() in pairs
 
 
-def count_inside(s):
+def count_inside(s): # backward inside
     assert len(s) > 1, "the length of rna should be at least 2!"
     n = len(s)
     counts = np.ones((n, n), dtype=int) # number of structures
@@ -52,7 +52,7 @@ def count_inside_2(s):
     return counts
 
 
-def count_outside(s, counts=None):
+def count_outside(s, counts=None): 
     assert len(s) > 1, "the length of rna should be at least 2!"
     if counts is None:
         counts = count_inside(s)
@@ -112,28 +112,69 @@ def count_outside_2(s, counts=None):
     return counts_out
 
 
-def count_outside_supp(s, counts=None):  # algorithm in the supplementary of linear partition
+def count_outside_backward(s, counts=None):  # algorithm in the supplementary of linear partition
     assert len(s) > 1, "the length of rna should be at least 2!"
     if counts is None:
         counts = count_inside(s)
     assert len(s) == len(counts) and len(s)==len(counts.T), "the length of rna should match counts matrix!"
     n = len(s)
-    counts_out = np.zeros((n, n), dtype=int) # number of structures
-    counts_out[0, -1] = 1
-    for i in range(1, n):
-        counts_out[i, n-1] = counts[0, i-1]
-    for j in range(n-1, 0, -1):
-        for i in range(0, j):
-            counts_out[i, j-1] += counts_out[i, j]
-            if match(s[i], s[j]):
-                counts_right = counts[i+1, j-1] if i+1<=j-1 else 1
-                for t in range(0, i):
-                    counts_outleft = counts_out[t, j]
-                    counts_out[t, i-1] += counts_outleft*counts_right  # pop left
-                    if i+1<=j-1:
-                        counts_out[i+1, j-1] += counts_outleft*counts[t, i-1] # pop right
-    return counts_out
+    counts_out = np.zeros((n, n+1), dtype=int) # number of structures, n-th column indexes the position -1
+    # p = defaultdict(lambda: defaultdict(int)) # pairing
+    # counts_out = np.zeros((n, n), dtype=np.uint) # # number of structures
+    p = np.zeros((n, n), dtype=int) # pairing
+    counts_out[0][n-1] = 1
+    for j in range(n-1, -1, -1):
+        for i in range(j, -1, -1 ): # end with j-1, start with i
+            counts_out[i][j-1] += counts_out[i][j]
+            if i>0 and match(s[i-1], s[j]):
+                counts_right = counts[i, j-1] if i<=j-1 else 1
+                for t in range(i-1, -1, -1): # end with i-2, start with t
+                    counts_left = counts[t, i-2] if t<=i-2 else 1
+                    counts_outleft = counts_out[t][j]
+                    counts_out[t][i-2] += counts_outleft*counts_right  # pop left
+                    counts_out[i][j-1] += counts_outleft*counts_left # pop right
+                    p[i-1][j] += counts_outleft*counts_left*counts_right # *counts[i, j-1] # count pairs
+    for i in range(len(p)):
+        for j in range(len(p[i])):
+            if p[i][j] > 0:
+                print(i+1, j+1, p[i][j])
+    return counts_out, p
 
+
+def count_outside_forward(s, inside=None):
+    assert len(s) > 1, "the length of rna should be at least 2!"
+    if inside is None:
+        inside = count_inside(s)
+    assert len(s) == len(inside) and len(s)==len(inside.T), "the length of rna should match counts matrix!"
+    n = len(s)
+    # outside = defaultdict(lambda: defaultdict(int))
+    # p = defaultdict(lambda: defaultdict(int))
+    outside = np.zeros((n, n+1), dtype=int)
+    p = np.zeros((n, n), dtype=int)
+    outside[0][n-1] = 1
+    for l in range(n, 0, -1):
+        for j in range(n-1, l-2, -1): # end: from n-1 to l-1
+            i = j-l+1  # start: j-(l-1)
+            outside[i][j-1] += outside[i][j] # unpaired j
+            for k in range(j-1, i-1, -1): # split: for j-1 to i
+                # print(l, j, i, k)
+                if match(s[k], s[j]):
+                    # print(l, j, i, k)
+                    right = inside[k+1][j-1] if k+1<=j-1 else 1
+                    left = inside[i][k-1] if i<=k-1 else 1
+                    outside[i][k-1] += outside[i][j]*right # pop left
+                    outside[k+1][j-1] += outside[i][j]*left # pop right
+                    p[k][j] += outside[i][j]*left*right
+    # for i in p:
+    #     for j in p[i]:
+    #         if p[i][j] > 0:
+    #             print(i+1, j+1, p[i][j])
+    for i in range(len(p)):
+        for j in range(len(p[i])):
+            if p[i][j] > 0:
+                print(i+1, j+1, p[i][j])
+    return outside, p
+                    
 
 def pair_match(ss):
     index_pairs = []
@@ -289,31 +330,7 @@ def inside_outside(algo_in, algo_out, rna):
     for i in range(n):
         count_unpair = p_out[i, i]
         print(f"{i+1} {count_unpair}")
-    # best_1, num_struct, best_all = algo_all(rna, None)
-    # counts_pp = counts_per_pair([item[-1] for item in best_all])
-    # print('count per pair:')
-    # n = len(rna)
-    # for i in range(n):
-    #     for j in range(i+1, n):
-    #         if counts_pp[i, j] > 0:
-    #             print(f"{i+1} {j+1} {counts_pp[i, j]}")
-    # print('count per unpaired:')
-    # for i in range(n):
-    #     print(f"{i+1} {counts_pp[i, i]}")
-    # p_in = algo_in(rna)
-    # print('rna:', rna)
-    # print('count inside:')
-    # for i in range(n):
-    #     for j in range(i, n):
-    #         print(f"{i+1} {j+1} {p_in[i, j]}")
-    # p_out = algo_out(rna, p_in)
-    # print('count outside:')
-    # for i in range(n):
-    #     for j in range(i, n):
-    #         if p_out[i, j] > 0:
-    #             print(f"{i+1} {j+1} {p_out[i, j]}")
-    # return p_in, p_out
-        
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -324,6 +341,8 @@ if __name__ == "__main__":
     parser.add_argument("--count", action='store_true')
     parser.add_argument("--inout", action='store_true')
     parser.add_argument("--verify", action='store_true')
+    parser.add_argument("--forward", action='store_true')
+    parser.add_argument("--backward", action='store_true')
     parser.add_argument("--compare", action='store_true')
     args = parser.parse_args()
     print('args:')
@@ -331,12 +350,9 @@ if __name__ == "__main__":
     if args.algo == 1:
             partition_in = count_inside
             partition_out = count_outside
-    elif args.algo == 2:
-        partition_in = count_inside_2
-        partition_out = count_outside_2
     else:
         partition_in = count_inside_2
-        partition_out = count_outside_supp
+        partition_out = count_outside_2
     if args.count:
         count(partition_in, partition_out, args.rna)
     if args.inout:
@@ -346,5 +362,13 @@ if __name__ == "__main__":
     if args.compare:
         compare_counts(args.rna)
         compare_counts_supp(args.rna)
+    if args.forward:
+        partition_out = count_outside_forward
+        p_in = partition_in(args.rna)
+        p_out = partition_out(args.rna, p_in)
+    if args.backward:
+        partition_out = count_outside_backward
+        p_in = partition_in(args.rna)
+        p_in = partition_out(args.rna, p_in)
     if args.test:
         test(partition_in, partition_out)
