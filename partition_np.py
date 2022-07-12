@@ -1,6 +1,7 @@
 import argparse
-from collections import defaultdict
+import numpy as np
 
+np.set_printoptions(linewidth=200)
 
 pairs = {'au', 'gc', 'gu'}
 sharpturn = 0
@@ -15,69 +16,66 @@ def set_sharpturn(sharpturn_val):
     print(f"sharpturn is: {sharpturn}")
 
 
-def inside_backward(s): 
+def inside_backward(s): # backward inside
     assert len(s) > 1, "the length of rna should be at least 2!"
     n = len(s)
-    counts = defaultdict(lambda: defaultdict(int)) # number of structures
+    counts = np.zeros((n, n+1), dtype=int) # number of structures
     for k in range(n):
         counts[k][k]=1
         counts[k][k-1] = 1
     for l in range(1, n):
         for i in range(0, n-l):
             j = i + l
-            counts[i][j] += counts[i][j-1] # x.
+            counts[i, j] += counts[i, j-1] # x.
             for t in range(i, j):
                 if match(s[t],  s[j]) and j-t>sharpturn: # (x); x(x)    
-                    count_left = counts[i][t-1] 
-                    count_right = counts[t+1][j-1] 
-                    counts[i][j] += count_left*count_right     
+                    count_left = counts[i, t-1] 
+                    count_right = counts[t+1, j-1] 
+                    counts[i, j] += count_left*count_right     
     return counts
 
 
 def inside_forward(s):
     assert len(s) > 1, "the length of rna should be at least 2!"
     n = len(s)
-    counts = defaultdict(lambda: defaultdict(int)) # number of structures
+    counts = np.zeros((n, n+1), dtype=int) # number of structures
     for k in range(n):
         counts[k][k]=1
         counts[k][k-1] = 1
     for j in range(1, n):
         for i in range(0, j):
-            counts[i][j] += counts[i][j-1] # x.
+            counts[i, j] += counts[i, j-1] # x.
             if match(s[i], s[j]) and j-i>sharpturn: # (x); x(x) 
-                counts_right = counts[i+1][j-1] 
+                counts_right = counts[i+1, j-1] 
                 for t in range(0, i):
-                    counts_left = counts[t][i-1] 
-                    counts[t][j] += counts_left*counts_right
-                counts[i][j] += counts_right
+                    counts_left = counts[t, i-1] 
+                    counts[t, j] += counts_left*counts_right
+                counts[i, j] += counts_right
     return counts
 
 
-def outside_backward(s, inside): 
+def outside_backward(s, inside):  # algorithm in the supplementary of linear partition
     assert len(s) > 1, "the length of rna should be at least 2!"
     assert len(s) == len(inside), "the length of rna should match counts matrix!"
     n = len(s)
-    outside = defaultdict(lambda: defaultdict(int))
-    p = defaultdict(lambda: defaultdict(int))
+    outside = np.zeros((n, n+1), dtype=int) # number of structures, n-th column indexes the position -1
+    p = np.zeros((n, n), dtype=int) # pairing
     outside[0][n-1] = 1
     for j in range(n-1, -1, -1):
         for i in range(j, -1, -1 ): # end with j-1, start with i
             outside[i][j-1] += outside[i][j] # x.
             if i>0 and match(s[i-1], s[j]) and j-(i-1)>sharpturn: # (x); x(x) 
-                counts_right = inside[i][j-1] 
+                counts_right = inside[i, j-1] #if i<=j-1 else 1
                 for t in range(i-1, -1, -1): # end with i-2, start with t
-                    counts_left = inside[t][i-2] 
+                    counts_left = inside[t, i-2] #if t<=i-2 else 1
                     counts_out = outside[t][j]
                     outside[t][i-2] += counts_out*counts_right  # pop left
                     outside[i][j-1] += counts_out*counts_left # pop right
-                    p[i-1][j] += counts_out*counts_left*counts_right # count pairs
-    triples = []
-    for i in p:
-        for j in p[i]:
+                    p[i-1][j] += counts_out*counts_left*counts_right # *counts[i, j-1] # count pairs
+    for i in range(len(p)):
+        for j in range(len(p[i])):
             if p[i][j] > 0:
-                triples.append((i+1, j+1, p[i][j]))
-    for triple in sorted(triples):
-        print(triple[0], triple[1], triple[2])
+                print(i+1, j+1, p[i][j])
     return outside, p
 
 
@@ -85,8 +83,8 @@ def outside_forward(s, inside):
     assert len(s) > 1, "the length of rna should be at least 2!"
     assert len(s) == len(inside), "the length of rna should match counts matrix!"
     n = len(s)
-    outside = defaultdict(lambda: defaultdict(int))
-    p = defaultdict(lambda: defaultdict(int))
+    outside = np.zeros((n, n+1), dtype=int)
+    p = np.zeros((n, n), dtype=int)
     outside[0][n-1] = 1
     for l in range(n, 0, -1):
         for j in range(n-1, l-2, -1): # end: from n-1 to l-1
@@ -94,18 +92,15 @@ def outside_forward(s, inside):
             outside[i][j-1] += outside[i][j] # # x.
             for k in range(j-1, i-1, -1): # split: for j-1 to i
                 if match(s[k], s[j]) and j-k>sharpturn: # (x); x(x) 
-                    right = inside[k+1][j-1] 
-                    left = inside[i][k-1] 
+                    right = inside[k+1][j-1] #if k+1<=j-1 else 1
+                    left = inside[i][k-1] # if i<=k-1 else 1
                     outside[i][k-1] += outside[i][j]*right # pop left
                     outside[k+1][j-1] += outside[i][j]*left # pop right
                     p[k][j] += outside[i][j]*left*right
-    triples = []
-    for i in p:
-        for j in p[i]:
+    for i in range(len(p)):
+        for j in range(len(p[i])):
             if p[i][j] > 0:
-                triples.append((i+1, j+1, p[i][j]))
-    for triple in sorted(triples):
-        print(triple[0], triple[1], triple[2])
+                print(i+1, j+1, p[i][j])
     return outside, p
 
 
