@@ -25,7 +25,7 @@ python fold.py --rna UUGGACUUG --algo 4 # the output can be very long\
 complexity: $\mathcal{O}(n^3)$
 
 ## Partition function (count version)
-### Count of inside and outside (table output)
+### Count of inside and outside (triple output)
 python partition.py --inside forward  --outside forward  --sharpturn 0  --rna UUUGGCACUA \
 python partition.py --inside forward  --outside backward --sharpturn 0 --rna UUUGGCACUA \
 python partition.py --inside backward --outside forward  --sharpturn 0 --rna UUUGGCACUA \
