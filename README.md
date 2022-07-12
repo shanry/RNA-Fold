@@ -26,14 +26,7 @@ complexity: $\mathcal{O}(n^3)$
 
 ## Partition function (count version)
 ### Count of inside and outside (table output)
-python partition.py --count --algo 1 --rna UUUGGCACUA # short to long recursion \
-python partition.py --count --algo 2 --rna UUUGGCACUA # left to right recursion
-
-### Count per pair and unpair (triple output)
-python partition.py --inout --algo 1 --rna UUUGGCACUA # short to long recursion \
-python partition.py --inout --algo 2 --rna UUUGGCACUA # left to right recursion
-
-### Verify count of inside and outside
-python partition.py --verify --algo 1 --rna UUUGGCACUA # short to long recursion \
-python partition.py --verify --algo 2 --rna UUUGGCACUA # left to right recursion
-
+python partition.py --inside forward  --outside forward  --sharpturn 0  --rna UUUGGCACUA \
+python partition.py --inside forward  --outside backward --sharpturn 0 --rna UUUGGCACUA \
+python partition.py --inside backward --outside forward  --sharpturn 0 --rna UUUGGCACUA \
+python partition.py --inside backward --outside backward --sharpturn 0 --rna UUUGGCACUA
