@@ -1,8 +1,5 @@
 import argparse
-from collections import defaultdict
 import numpy as np
-
-from k_best import algo_all
 
 np.set_printoptions(linewidth=200)
 
@@ -41,7 +38,7 @@ def inside_backward(s): # backward inside
 def inside_forward(s):
     assert len(s) > 1, "the length of rna should be at least 2!"
     n = len(s)
-    counts = np.ones((n, n+1), dtype=int) # number of structures
+    counts = np.zeros((n, n+1), dtype=int) # number of structures
     for k in range(n):
         counts[k][k]=1
         counts[k][k-1] = 1
@@ -57,40 +54,11 @@ def inside_forward(s):
     return counts
 
 
-# def outside_backward_(s, counts):  # algorithm in the supplementary of linear partition
-#     assert len(s) > 1, "the length of rna should be at least 2!"
-#     assert len(s) == len(counts), "the length of rna should match counts matrix!"
-#     n = len(s)
-#     counts_out = np.zeros((n, n+1), dtype=int) # number of structures, n-th column indexes the position -1
-#     # p = defaultdict(lambda: defaultdict(int)) # pairing
-#     # counts_out = np.zeros((n, n), dtype=np.uint) # # number of structures
-#     p = np.zeros((n, n), dtype=int) # pairing
-#     counts_out[0][n-1] = 1
-#     for j in range(n-1, -1, -1):
-#         for i in range(j, -1, -1 ): # end with j-1, start with i
-#             counts_out[i][j-1] += counts_out[i][j] # x.
-#             if i>0 and match(s[i-1], s[j]) and j-(i-1)>sharpturn: # (x); x(x) 
-#                 counts_right = counts[i, j-1] #if i<=j-1 else 1
-#                 for t in range(i-1, -1, -1): # end with i-2, start with t
-#                     counts_left = counts[t, i-2] #if t<=i-2 else 1
-#                     counts_outleft = counts_out[t][j]
-#                     counts_out[t][i-2] += counts_outleft*counts_right  # pop left
-#                     counts_out[i][j-1] += counts_outleft*counts_left # pop right
-#                     p[i-1][j] += counts_outleft*counts_left*counts_right # *counts[i, j-1] # count pairs
-#     for i in range(len(p)):
-#         for j in range(len(p[i])):
-#             if p[i][j] > 0:
-#                 print(i+1, j+1, p[i][j])
-#     return counts_out, p
-
-
 def outside_backward(s, inside):  # algorithm in the supplementary of linear partition
     assert len(s) > 1, "the length of rna should be at least 2!"
     assert len(s) == len(inside), "the length of rna should match counts matrix!"
     n = len(s)
     outside = np.zeros((n, n+1), dtype=int) # number of structures, n-th column indexes the position -1
-    # p = defaultdict(lambda: defaultdict(int)) # pairing
-    # counts_out = np.zeros((n, n), dtype=np.uint) # # number of structures
     p = np.zeros((n, n), dtype=int) # pairing
     outside[0][n-1] = 1
     for j in range(n-1, -1, -1):
@@ -115,8 +83,6 @@ def outside_forward(s, inside):
     assert len(s) > 1, "the length of rna should be at least 2!"
     assert len(s) == len(inside), "the length of rna should match counts matrix!"
     n = len(s)
-    # outside = defaultdict(lambda: defaultdict(int))
-    # p = defaultdict(lambda: defaultdict(int))
     outside = np.zeros((n, n+1), dtype=int)
     p = np.zeros((n, n), dtype=int)
     outside[0][n-1] = 1
