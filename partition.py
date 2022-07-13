@@ -53,7 +53,7 @@ def inside_forward(s):
     return counts
 
 
-def outside_backward(s, inside): 
+def outside_forward(s, inside): 
     assert len(s) > 1, "the length of rna should be at least 2!"
     assert len(s) == len(inside), "the length of rna should match counts matrix!"
     n = len(s)
@@ -81,7 +81,7 @@ def outside_backward(s, inside):
     return outside, p
 
 
-def outside_forward(s, inside):
+def outside_backward(s, inside):
     assert len(s) > 1, "the length of rna should be at least 2!"
     assert len(s) == len(inside), "the length of rna should match counts matrix!"
     n = len(s)
